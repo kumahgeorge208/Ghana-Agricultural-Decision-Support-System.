@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | Ghana Regional Agriculture Analytics Platform</title>
+    <meta name="description" content="Production-grade agricultural data analytics dashboard for Ghana regions, crop yields, and economic indicators. Powered by FieldBridge Analytics.">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Lexend:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="responsive.css">
+</head>
+<body class="dashboard-layout project-wallpaper-active">
+
+    <div class="project-wallpaper-media"></div>
+    <div class="project-wallpaper-blur-mask"></div>
+
+    <header class="main-header">
+        <div class="header-brand">
+            <div class="logo-container">
+                <div class="brand-text">
+                    <h1>FieldBridge <span class="accent-text">Analytics</span></h1>
+                    <span class="sub-brand">Ghana Agricultural Decision Support System</span>
+                </div>
+            </div>
+        </div>
+        
+        <nav class="top-nav" aria-label="Main Navigation">
+            <ul>
+                <li><a href="#overview"><i class="fa-solid fa-house"></i> Home</a></li>
+                <li><a href="#overview" class="active"><i class="fa-solid fa-chart-line"></i> Dashboard</a></li>
+                <li><a href="#spatial-analysis"><i class="fa-solid fa-map-location-dot"></i> Regions</a></li>
+                <li><a href="#commodity-mix"><i class="fa-solid fa-seedling"></i> Commodities</a></li>
+                <li><a href="#download-centre"><i class="fa-solid fa-cloud-arrow-down"></i> Data Sources</a></li>
+            </ul>
+        </nav>
+        
+        <div class="header-actions">
+            <div class="user-profile">
+                <span class="user-role">MoFA / SRID Partner</span>
+                <div class="avatar"><i class="fa-solid fa-user-tie"></i></div>
+            </div>
+            <button class="mobile-menu-toggle" aria-label="Toggle Navigation Menu">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+        </div>
+    </header>
+
+    <div class="app-container">
+        <aside class="enterprise-sidebar">
+            <div class="sidebar-section">
+                <h3>Core Analytics</h3>
+                <nav class="sidebar-nav">
+                    <ul>
+                        <li><a href="#overview" class="active"><i class="fa-solid fa-layer-group"></i> Overview Matrix</a></li>
+                        <li><a href="#spatial-analysis"><i class="fa-solid fa-earth-africa"></i> Spatial Mapping</a></li>
+                        <li><a href="#production-trends"><i class="fa-solid fa-chart-area"></i> Production Trends</a></li>
+                        <li><a href="#commodity-mix"><i class="fa-solid fa-pie-chart"></i> Crop Composition</a></li>
+                        <li><a href="#distribution-analysis"><i class="fa-solid fa-chart-bar"></i> Yield Distribution</a></li>
+                    </ul>
+                </nav>
+            </div>
+            
+            <div class="sidebar-section">
+                <h3>Management Modules</h3>
+                <nav class="sidebar-nav">
+                    <ul>
+                        <li><a href="#data-explorer"><i class="fa-solid fa-table-list"></i> Data Explorer Table</a></li>
+                        <li><a href="#download-centre"><i class="fa-solid fa-cloud-arrow-down"></i> Export Central</a></li>
+                    </ul>
+                </nav>
+            </div>
+
+            <div class="sidebar-footer">
+                <p>Data Version: 2026.1</p>
+                <p>Source: MoFA Ghana / SRID / FAO</p>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            
+            <section class="filter-toolbar-container" id="overview">
+                <div class="toolbar-title">
+                    <h2>National Agricultural Performance Dashboard</h2>
+                    <p>Decadal insights across 10-year intervals matching national agricultural surveys.</p>
+                </div>
+                <div class="filter-toolbar">
+                    <div class="filter-group">
+                        <label for="filter-year-interval"><i class="fa-solid fa-calendar-days"></i> Decadal Epoch</label>
+                        <select id="filter-year-interval" class="form-control">
+                            <option value="2016-2026" selected>2016 – 2026 (Current Decadal)</option>
+                            <option value="2006-2016">2006 – 2016 (Historical Baseline)</option>
+                            <option value="1996-2006">1996 – 2006 (Legacy Reference)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label for="filter-region"><i class="fa-solid fa-location-dot"></i> Macro Region</label>
+                        <select id="filter-region" class="form-control">
+                            <option value="ALL" selected>All Regions (National Aggregate)</option>
+                            <option value="ASHANTI">Ashanti</option>
+                            <option value="EASTERN">Eastern</option>
+                            <option value="BONO_EAST">Bono East</option>
+                            <option value="NORTHERN">Northern</option>
+                            <option value="WESTERN_NORTH">Western North</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="filter-commodity-type"><i class="fa-solid fa-seedling"></i> Sector Category</label>
+                        <select id="filter-commodity-type" class="form-control">
+                            <option value="ALL" selected>All Commodities</option>
+                            <option value="CEREALS">Cereals (Maize, Rice)</option>
+                            <option value="ROOTS_TUBERS">Roots & Tubers (Cassava, Yam)</option>
+                            <option value="CASH_CROPS">Tree/Cash Crops (Cocoa)</option>
+                            <option value="HORTICULTURE">Horticulture (Pineapple, Mango)</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-actions">
+                        <button id="btn-apply-filters" class="btn btn-primary"><i class="fa-solid fa-filter"></i> Apply Filters</button>
+                        <button id="btn-reset-filters" class="btn btn-secondary"><i class="fa-solid fa-arrow-rotate-left"></i> Reset</button>
+                    </div>
+                </div>
+            </section>
+
+            <section class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-icon-wrapper yield-kpi">
+                        <i class="fa-solid fa-cubes"></i>
+                    </div>
+                    <div class="kpi-data">
+                        <h3>Total Production Output</h3>
+                        <div class="kpi-value" id="kpi-total-production">34,892,110 <span class="kpi-unit">MT</span></div>
+                        <div class="kpi-trend positive" id="trend-production">
+                            <i class="fa-solid fa-caret-up"></i> <span>+14.2%</span> <span class="trend-context">vs previous decadal</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-icon-wrapper area-kpi">
+                        <i class="fa-solid fa-chart-pie"></i>
+                    </div>
+                    <div class="kpi-data">
+                        <h3>Total Area Cultivated</h3>
+                        <div class="kpi-value" id="kpi-total-area">6,421,950 <span class="kpi-unit">Ha</span></div>
+                        <div class="kpi-trend positive" id="trend-area">
+                            <i class="fa-solid fa-caret-up"></i> <span>+5.8%</span> <span class="trend-context">vs previous decadal</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-icon-wrapper efficiency-kpi">
+                        <i class="fa-solid fa-gauge-high"></i>
+                    </div>
+                    <div class="kpi-data">
+                        <h3>Average Land Productivity</h3>
+                        <div class="kpi-value" id="kpi-avg-yield">5.43 <span class="kpi-unit">MT/Ha</span></div>
+                        <div class="kpi-trend stable" id="trend-efficiency">
+                            <i class="fa-solid fa-minus"></i> <span>+0.4%</span> <span class="trend-context">stable metrics</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-icon-wrapper economic-kpi">
+                        <i class="fa-solid fa-money-bill-trend-up"></i>
+                    </div>
+                    <div class="kpi-data">
+                        <h3>Ag-GVA Contribution</h3>
+                        <div class="kpi-value" id="kpi-gva-contribution">21.4 <span class="kpi-unit">% GDP</span></div>
+                        <div class="kpi-trend negative" id="trend-gva">
+                            <i class="fa-solid fa-caret-down"></i> <span>-1.1%</span> <span class="trend-context">structural shifts</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="dashboard-grid matrix-row-1" id="spatial-analysis">
+                <div class="grid-card map-visualization-card">
+                    <div class="card-header">
+                        <div class="card-title-block">
+                            <i class="fa-solid fa-map-location"></i>
+                            <div>
+                                <h3>Geospatial Choropleth: Regional Output Distributions</h3>
+                                <p>Interactive Leaflet matrix mapped directly to regional subdivisions.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div id="ghana-choropleth-map" style="height: 400px; border-radius: 6px; background: rgba(224, 232, 228, 0.6);"></div>
+                    </div>
+                </div>
+
+                <div class="grid-card ranking-card">
+                    <div class="card-header">
+                        <div class="card-title-block">
+                            <i class="fa-solid fa-ranking-star"></i>
+                            <div>
+                                <h3>Regional Productivity Rankings</h3>
+                                <p>Ranked metrics configured dynamically to selection criteria.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body raw-table-wrapper">
+                        <table class="dashboard-table rankings-table" id="table-regional-rankings">
+                            <thead>
+                                <tr>
+                                    <th>Rank</th>
+                                    <th>Region</th>
+                                    <th class="numeric-column">Volume (MT)</th>
+                                    <th class="numeric-column">% National Share</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rankings-table-body">
+                                <tr>
+                                    <td><span class="badge-rank rank-1">1</span></td>
+                                    <td><strong>Ashanti Region</strong></td>
+                                    <td class="numeric-column font-tabular">8,421,000</td>
+                                    <td class="numeric-column text-bold green-cell">24.13%</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge-rank rank-2">2</span></td>
+                                    <td><strong>Eastern Region</strong></td>
+                                    <td class="numeric-column font-tabular">7,112,500</td>
+                                    <td class="numeric-column text-bold green-cell">20.38%</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge-rank rank-3">3</span></td>
+                                    <td><strong>Bono East Region</strong></td>
+                                    <td class="numeric-column font-tabular">5,984,300</td>
+                                    <td class="numeric-column text-bold green-cell">17.15%</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge-rank">4</span></td>
+                                    <td><strong>Northern Region</strong></td>
+                                    <td class="numeric-column font-tabular">4,120,900</td>
+                                    <td class="numeric-column text-bold">11.81%</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge-rank">5</span></td>
+                                    <td><strong>Western North</strong></td>
+                                    <td class="numeric-column font-tabular">3,890,200</td>
+                                    <td class="numeric-column text-bold">11.15%</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <section class="dashboard-grid matrix-row-2" id="production-trends">
+                <div class="grid-card chart-analytics-card">
+                    <div class="card-header">
+                        <div class="card-title-block">
+                            <i class="fa-solid fa-chart-line"></i>
+                            <div>
+                                <h3>Decadal Production Trajectory</h3>
+                                <p>Evaluating variations in crop production vs spatial footprint expansions.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body standard-chart-canvas">
+                        <canvas id="chart-production-trends"></canvas>
+                    </div>
+                </div>
+
+                <div class="grid-card chart-analytics-card" id="commodity-mix">
+                    <div class="card-header">
+                        <div class="card-title-block">
+                            <i class="fa-solid fa-pie-chart"></i>
+                            <div>
+                                <h3>Commodity Share Distribution Matrix</h3>
+                                <p>Proportional macro value breakups across core agricultural classifications.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body standard-chart-canvas">
+                        <canvas id="chart-commodity-mix"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <section class="dashboard-grid matrix-row-3" id="distribution-analysis">
+                <div class="grid-card chart-analytics-card">
+                    <div class="card-header">
+                        <div class="card-title-block">
+                            <i class="fa-solid fa-chart-bar"></i>
+                            <div>
+                                <h3>Cross-Regional Aggregate Tonnage Bar</h3>
+                                <p>Direct structural breakdowns grouped by production outputs across sub-sectors.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body standard-chart-canvas">
+                        <canvas id="chart-regional-comparison"></canvas>
+                    </div>
+                </div>
+
+                <div class="grid-card chart-analytics-card">
+                    <div class="card-header">
+                        <div class="card-title-block">
+                            <i class="fa-solid fa-chart-simple"></i>
+                            <div>
+                                <h3>Yield Concentration Histogram</h3>
+                                <p>Statistical density analytics measuring performance distribution variants.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body standard-chart-canvas">
+                        <canvas id="chart-yield-histogram"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <section class="grid-card data-explorer-section" id="data-explorer">
+                <div class="card-header border-bottom">
+                    <div class="card-title-block">
+                        <i class="fa-solid fa-database"></i>
+                        <div>
+                            <h3>Granular District Records Data Explorer</h3>
+                            <p>Query, filter, and drill-down into specific granular records.</p>
+                        </div>
+                    </div>
+                    <div class="explorer-table-controls">
+                        <div class="search-box-wrapper">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" id="explorer-search" class="form-control-sm" placeholder="Search entries...">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-body raw-table-wrapper">
+                    <table class="dashboard-table explorer-table" id="main-data-explorer-table">
+                        <thead>
+                            <tr>
+                                <th>Year</th>
+                                <th>Region</th>
+                                <th>Commodity Class</th>
+                                <th>Cultivated Footprint (Ha)</th>
+                                <th>Total Tonnage (MT)</th>
+                                <th>Yield Efficiency (MT/Ha)</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="explorer-table-body">
+                            </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="grid-card download-centre-section" id="download-centre">
+                <div class="card-header">
+                    <div class="card-title-block">
+                        <i class="fa-solid fa-cloud-arrow-down"></i>
+                        <div>
+                            <h3>Enterprise Export Download Centre</h3>
+                            <p>Generate analytical pipeline outputs in industry-standard structures.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body export-actions-layout">
+                    <div class="export-channel-card">
+                        <div class="channel-icon text-csv"><i class="fa-solid fa-file-csv"></i></div>
+                        <div class="channel-details">
+                            <h4>Tabular Comma Separated Raw Data</h4>
+                            <p>Complete historical filtered analytics dataset.</p>
+                        </div>
+                        <button id="export-btn-csv" class="btn btn-outline-primary"><i class="fa-solid fa-download"></i> Save .CSV</button>
+                    </div>
+                    <div class="export-channel-card">
+                        <div class="channel-icon text-pdf"><i class="fa-solid fa-file-pdf"></i></div>
+                        <div class="channel-details">
+                            <h4>Executive Summary Report</h4>
+                            <p>Compiles visible dashboard graphical outputs into a clean window layout.</p>
+                        </div>
+                        <button id="export-btn-pdf" class="btn btn-outline-primary"><i class="fa-solid fa-print"></i> Generate Report</button>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <footer class="application-footer">
+        <div class="footer-upper">
+            <div class="footer-column brand-summary">
+                <h4>FieldBridge Analytics</h4>
+                <p>Advanced agricultural monitoring platforms enabling data-driven governance, resource management, and transparency in farming supply chains across West Africa.</p>
+            </div>
+            <div class="footer-column links-group">
+                <h4>Framework Standards</h4>
+                <div class="logo-row-mock">
+                    <span class="framework-tag">FAOSTAT Aligned</span>
+                    <span class="framework-tag">GSS Standards</span>
+                    <span class="framework-tag">SDG 2 Indicators</span>
+                </div>
+            </div>
+        </div>
+        <div class="footer-lower">
+            <p>&copy; 2026 FieldBridge Analytics. Developed for the Ghana Agricultural Decision Support Initiative.</p>
+            <div class="footer-system-status">
+                <span class="status-indicator-dot online"></span> Live Core Engine Sync Active
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script src="app.js"></script>
+    <script src="filters.js"></script>
+    <script src="map.js"></script>
+    <script src="charts.js"></script>
+    <script src="export.js"></script>
+    <script src="dashboard.js"></script>
+</body>
+</html>
